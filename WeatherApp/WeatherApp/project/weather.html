@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #283048, #859398); /* Unique gradient background */
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            color: #ffffff;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 100%;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            background: #f9f9f9;
+            color: #333;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            color: #fff;
+            background: #283048;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #1b2230;
+        }
+
+        .result {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .result h2,
+        .result p {
+            margin: 5px 0;
+            font-size: 1.1rem;
+            color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weather App</h1>
+    <form id="weatherForm">
+        <input type="text" id="city" placeholder="Enter city name" required>
+        <button type="submit">Get Weather</button>
+    </form>
+    <div class="result" id="result" style="display: none;">
+        <h2 id="cityName"></h2>
+        <p id="temperature"></p>
+        <p id="description"></p>
+    </div>
+
+    <script>
+        const form = document.getElementById('weatherForm');
+        const result = document.getElementById('result');
+        const cityName = document.getElementById('cityName');
+        const temperature = document.getElementById('temperature');
+        const description = document.getElementById('description');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const city = document.getElementById('city').value.trim();
+            if (!city) {
+                alert('Please enter a city name.');
+                return;
+            }
+
+            const apiKey = 'e2f24b7ef7f15eec0a5e6c268538aec7'; // Replace with your OpenWeatherMap API key
+            const geoApiUrl = `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${apiKey}`;
+
+            try {
+                // Fetch Geocoding Data
+                const geoResponse = await fetch(geoApiUrl);
+                if (!geoResponse.ok) throw new Error('City not found.');
+
+                const geoData = await geoResponse.json();
+                if (!geoData || geoData.length === 0) throw new Error('City not found.');
+
+                const { lat, lon } = geoData[0];
+
+                // Fetch Weather Data
+                const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`;
+                const weatherResponse = await fetch(weatherApiUrl);
+                if (!weatherResponse.ok) throw new Error('Weather data not available.');
+
+                const weatherData = await weatherResponse.json();
+
+                // Display Weather Data
+                cityName.textContent = `City: ${weatherData.name}`;
+                temperature.textContent = `Temperature: ${weatherData.main.temp}°C`;
+                description.textContent = `Weather: ${weatherData.weather[0].description}`;
+
+                result.style.display = 'block';
+            } catch (error) {
+                alert(`Error: ${error.message}`);
+                result.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
